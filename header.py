@@ -101,6 +101,9 @@ def pre_process(ohlcv):
     kline_data.to_csv('test.csv')
     return kline_data
 
+def back_test(kline_data):
+    
+
 
            
 
