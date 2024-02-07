@@ -79,15 +79,15 @@ def cal_timestamp(stamp):
     return start_time
 
 def read_data(kline_data, i):
-    return (float(kline_data.loc[i, 'price']),   
-        float(kline_data.loc[i, 'ub']),      
-        float(kline_data.loc[i, 'boll']),            
-        float(kline_data.loc[i, 'lb']))
+    return float(kline_data.loc[i, 'price']), \
+        float(kline_data.loc[i, 'ub']), \
+        float(kline_data.loc[i, 'boll']),  \
+        float(kline_data.loc[i, 'lb'])
 
 
 def pre_process(ohlcv):
     kline_data = pd.DataFrame()
-    kline_data['data_time'] = ohlcv['Timestamp']
+    kline_data['date_time'] = ohlcv['Timestamp']
     kline_data['ub'], kline_data['boll'], kline_data['lb'] = \
     talib.BBANDS(ohlcv['close'], timeperiod = 22, nbdevup = 2.0, nbdevdn = 2.0)
     kline_data['buy_sell'] = ''
@@ -102,7 +102,102 @@ def pre_process(ohlcv):
     return kline_data
 
 def back_test(kline_data):
-    
+    trade_flag = False
+    open_time = ''
+    direction = ''
+    start_fun = 1200
+    trade_num = float(start_fun/100) * 0.01
+    open_fee = 0.0
+    close_fee = 0.0
+    for i in range(0, len(kline_data)):
+        now_price = float(kline_data.loc[i, 'price'])
+        ub = float(kline_data.loc[i, 'ub'])
+        boll = float(kline_data.loc[i, 'boll'])
+        # now_price, ub, boll, lb = read_data(kline_data, i)
+        if not trade_flag:
+            if direction == '':
+                if kline_data.loc[i, 'buy_sell'] != '':
+                    open_time = kline_data.loc[i, 'date_time']
+                    open_price = now_price
+                    direction = kline_data.loc[i, 'buy_sell']  
+                    trade_flag = True
+                    open_fee = now_price / 20 * trade_num * 0.0004
+
+        if trade_flag:
+            if direction == 'BUY':
+                if now_price - open_price > 20:
+                    print('done 1')
+                    close_fee = now_price / 20 * trade_num * 0.0002
+                    profit = float((now_price - open_price) * trade_num) - \
+                    open_fee - close_fee
+                    direction = ''
+                    open_time = ''
+                    open_price = 0.0
+                    start_fun += profit
+                    trade_num = int(start_fun / 100) * 0.01
+                    trade_flag = False
+
+                elif now_price - open_price < 20:
+                    print('done 2')
+                    close_fee = now_price / 20 * trade_num * 0.0002
+                    profit = float((now_price - open_price) * trade_num) - \
+                    open_fee - close_fee
+                    direction = ''
+                    open_time = ''
+                    open_price = 0.0
+                    start_fun += profit
+                    trade_num = int(start_fun / 100) * 0.01
+                    trade_flag = False
+                
+                # elif now_price > (ub - boll):
+                #     close_fee = now_price / 20 * trade_num * 0.0002
+                #     profit = float((now_price - open_price) * trade_num) - \
+                #     open_fee - close_fee
+                #     direction = ''
+                #     open_time = ''
+                #     open_price = 0.0
+                #     start_fun += profit
+                #     trade_num = int(start_fun / 100) * 0.01
+                #     trade_flag = False
+
+            elif direction == 'SELL':
+                if open_price - now_price > 20:
+                    print('done 3')
+                    close_fee = now_price / 20 * trade_num * 0.0002
+                    profit = float((now_price - open_price) * trade_num) - \
+                    open_fee - close_fee
+                    direction = ''
+                    open_time = ''
+                    open_price = 0.0
+                    start_fun += profit
+                    trade_num = int(start_fun / 100) * 0.01
+                    trade_flag = False
+
+                elif open_price - now_price < 20:
+                    print('done 4')
+                    close_fee = now_price / 20 * trade_num * 0.0002
+                    profit = float((now_price - open_price) * trade_num) - \
+                    open_fee - close_fee
+                    direction = ''
+                    open_time = ''
+                    open_price = 0.0
+                    start_fun += profit
+                    trade_num = int(start_fun / 100) * 0.01
+                    trade_flag = False
+                
+                # elif now_price < lb + (boll - lb) / 5:
+                #     close_fee = now_price / 20 * trade_num * 0.0002
+                #     profit = float((now_price - open_price) * trade_num) - \
+                #     open_fee - close_fee
+                #     direction = ''
+                #     open_time = ''
+                #     open_price = 0.0
+                #     start_fun += profit
+                #     trade_num = int(start_fun / 100) * 0.01
+                #     trade_flag = False
+
+    return start_fun
+
 
 
            
