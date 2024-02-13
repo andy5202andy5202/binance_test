@@ -122,7 +122,7 @@ def back_test(kline_data):
     trade_flag = False
     open_time = ''
     direction = ''
-    start_fun = 10000.00
+    start_fun = 10000.0
     trade_num = int(start_fun/100) * 0.01
     open_fee = 0.0
     close_fee = 0.0
