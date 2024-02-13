@@ -5,4 +5,6 @@ from datetime import datetime
         
 if __name__ == '__main__':
     ohlcv = h.get_history_kline('1d')
-    ohlcv.to_csv("test.csv")
+    ohlcv = h.pre_process(ohlcv)
+    profit = h.back_test(ohlcv)
+    print(profit)
