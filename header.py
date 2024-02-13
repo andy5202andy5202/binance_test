@@ -26,6 +26,21 @@ column = [
     'Ignore'
 ]
 
+column2 = [
+    'Timestamp',
+    'open_price',
+    'High',
+    'Low',
+    'Close_Price',
+    'Volumn',
+    'Close_time',
+    'Turnover',
+    'Trades_number',
+    'Active_Buy_Vol',
+    'Active_Buy_Turnover',
+    'Ignore'
+]
+
 time_sec = {
     '1m' : 60,
     '5m' : 300,
@@ -61,11 +76,11 @@ def get_history_kline(sizes):
     finish_time = cal_timestamp(str(datetime.now()))
     start_time = cal_timestamp('2020-01-01 0:0:0.0')
     end_time = start_time + (time_sec.get(sizes) * 500 * 1000)
-    a = pd.DataFrame(get_kline('ETHUSDT', sizes, start_time, end_time), columns = column)
+    a = pd.DataFrame(get_kline('ETHUSDT', sizes, start_time, end_time), columns = column2)
     start_time = end_time
     while start_time < finish_time:
         end_time = start_time + (time_sec.get(sizes) * 500 * 1000)
-        b = pd.DataFrame(get_kline('ETHUSDT', sizes, start_time, end_time), columns = column)
+        b = pd.DataFrame(get_kline('ETHUSDT', sizes, start_time, end_time), columns = column2)
         a = pd.concat([a, b], ignore_index = True)
         start_time = end_time
     a.drop_duplicates(keep = 'first', inplace = False, ignore_index = True)
@@ -92,6 +107,7 @@ def pre_process(ohlcv):
     talib.BBANDS(ohlcv['close'], timeperiod = 22, nbdevup = 2.0, nbdevdn = 2.0)
     kline_data['buy_sell'] = ''
     kline_data['price'] = ohlcv['close']
+    kline_data['open_price'] = ohlcv['open']
     for i in range(1, len(kline_data)):
         price, ub, boll, lb = read_data(kline_data, i)
         if price > (ub - (ub - boll) / 5):
@@ -111,22 +127,28 @@ def back_test(kline_data):
     close_fee = 0.0
     for i in range(0, len(kline_data)):
         now_price = float(kline_data.loc[i, 'price'])
-        ub = float(kline_data.loc[i, 'ub'])
-        boll = float(kline_data.loc[i, 'boll'])
-        # now_price, ub, boll, lb = read_data(kline_data, i)
+        open_price = float(kline_data.loc[i, 'open_price'])
+
+        print("Iteration:", i)
+        print("Direction:", direction)
+        print("Now Price:", now_price)
+        print("open price:", open_price )
+
+
         if not trade_flag:
             if direction == '':
                 if kline_data.loc[i, 'buy_sell'] != '':
                     open_time = kline_data.loc[i, 'date_time']
-                    open_price = now_price
+                    # open_price = now_price
+                    print('not', open_price)
                     direction = kline_data.loc[i, 'buy_sell']  
                     trade_flag = True
                     open_fee = now_price / 20 * trade_num * 0.0004
 
         if trade_flag:
             if direction == 'BUY':
-                if now_price - open_price > 20:
-                    print('done 1')
+                if now_price - open_price > 10:
+                    print('done 1, BUY', open_price, now_price)
                     close_fee = now_price / 20 * trade_num * 0.0002
                     profit = float((now_price - open_price) * trade_num) - \
                     open_fee - close_fee
@@ -137,8 +159,8 @@ def back_test(kline_data):
                     trade_num = int(start_fun / 100) * 0.01
                     trade_flag = False
 
-                elif now_price - open_price < 20:
-                    print('done 2')
+                elif now_price - open_price < 10:
+                    print('done 2, BUY', open_price, now_price)
                     close_fee = now_price / 20 * trade_num * 0.0002
                     profit = float((now_price - open_price) * trade_num) - \
                     open_fee - close_fee
@@ -162,7 +184,7 @@ def back_test(kline_data):
 
             elif direction == 'SELL':
                 if open_price - now_price > 20:
-                    print('done 3')
+                    print('done 3, SELL', open_price, now_price)
                     close_fee = now_price / 20 * trade_num * 0.0002
                     profit = float((now_price - open_price) * trade_num) - \
                     open_fee - close_fee
@@ -174,7 +196,7 @@ def back_test(kline_data):
                     trade_flag = False
 
                 elif open_price - now_price < 20:
-                    print('done 4')
+                    print('done 4, SELL, ', open_price, now_price)
                     close_fee = now_price / 20 * trade_num * 0.0002
                     profit = float((now_price - open_price) * trade_num) - \
                     open_fee - close_fee
