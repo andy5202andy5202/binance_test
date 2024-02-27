@@ -128,6 +128,9 @@ def back_test(kline_data):
     close_fee = 0.0
     for i in range(0, len(kline_data)):
         now_price = float(kline_data.loc[i, 'price'])
+        ub = float(kline_data.loc[i, 'ub'])
+        lb = float(kline_data.loc[i, 'lb'])
+        boll = float(kline_data.loc[i, 'boll'])
         # open_price = float(kline_data.loc[i, 'open_price'])
         # print("Iteration:", i)
         # print("Now Price:", now_price)
@@ -155,6 +158,7 @@ def back_test(kline_data):
                     start_fun += profit
                     trade_num = int(start_fun / 100) * 0.01
                     trade_flag = False
+                    # print("1")
 
                 elif now_price - open_price < 20:
                     close_fee = now_price / 20 * trade_num * 0.0002
@@ -166,17 +170,18 @@ def back_test(kline_data):
                     start_fun += profit
                     trade_num = int(start_fun / 100) * 0.01
                     trade_flag = False
+                    # print("2")
                 
-                # elif now_price > (ub - boll):
-                #     close_fee = now_price / 20 * trade_num * 0.0002
-                #     profit = float((now_price - open_price) * trade_num) - \
-                #     open_fee - close_fee
-                #     direction = ''
-                #     open_time = ''
-                #     open_price = 0.0
-                #     start_fun += profit
-                #     trade_num = int(start_fun / 100) * 0.01
-                #     trade_flag = False
+                elif now_price > (ub - boll):
+                    close_fee = now_price / 20 * trade_num * 0.0002
+                    profit = float((now_price - open_price) * trade_num) - \
+                    open_fee - close_fee
+                    direction = ''
+                    open_time = ''
+                    open_price = 0.0
+                    start_fun += profit
+                    trade_num = int(start_fun / 100) * 0.01
+                    trade_flag = False
 
             elif direction == 'SELL':
                 if open_price - now_price > 20:
@@ -189,6 +194,7 @@ def back_test(kline_data):
                     start_fun += profit
                     trade_num = int(start_fun / 100) * 0.01
                     trade_flag = False
+                    # print("3")
 
                 elif open_price - now_price < 20:
                     close_fee = now_price / 20 * trade_num * 0.0002
@@ -200,17 +206,18 @@ def back_test(kline_data):
                     start_fun += profit
                     trade_num = int(start_fun / 100) * 0.01
                     trade_flag = False
+                    # print("4")
                 
-                # elif now_price < lb + (boll - lb) / 5:
-                #     close_fee = now_price / 20 * trade_num * 0.0002
-                #     profit = float((now_price - open_price) * trade_num) - \
-                #     open_fee - close_fee
-                #     direction = ''
-                #     open_time = ''
-                #     open_price = 0.0
-                #     start_fun += profit
-                #     trade_num = int(start_fun / 100) * 0.01
-                #     trade_flag = False
+                elif now_price < lb + (boll - lb) / 5:
+                    close_fee = now_price / 20 * trade_num * 0.0002
+                    profit = float((now_price - open_price) * trade_num) - \
+                    open_fee - close_fee
+                    direction = ''
+                    open_time = ''
+                    open_price = 0.0
+                    start_fun += profit
+                    trade_num = int(start_fun / 100) * 0.01
+                    trade_flag = False
 
     return start_fun
 
