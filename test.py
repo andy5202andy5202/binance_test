@@ -300,4 +300,5 @@ if __name__ == '__main__':
     scheduler = BlockingScheduler(timezone = "Asia/Shanghai")
     scheduler.add_job(auto, 'interval', minutes = 1)
     scheduler.start()
+    #test
     
