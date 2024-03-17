@@ -10,9 +10,18 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 import os
 import sys
 
-API_KEY = "c3a8f2bc18f9d0ec37de34cb55afd27f3e17b5cbeccbaef7bd2c6e99bbcf68ee"
-SECRET_KEY = "62842ef4edb7f1894e0ff8e1835a5b4976d5481de14a748c98fbbda2e7fdf897"
-BASE_URL = "https://testnet.binancefuture.com"
+with open('api_key.txt', 'r') as file:
+    lines = file.readlines()
+
+api_keys = {}
+for line in lines:
+    key, value = line.strip().split(' = ')
+    api_keys[key] = value.strip('"')
+
+API_KEY = api_keys['API_KEY']
+SECRET_KEY = api_keys['SECRET_KEY']
+BASE_URL = api_keys['BASE_URL']
+
 
 um_futures_client = UMFutures(
     key = API_KEY,
