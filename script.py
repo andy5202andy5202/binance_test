@@ -29,6 +29,8 @@ um_futures_client = UMFutures(
     base_url = BASE_URL
 )
 
+config_logging(logging, logging.DEBUG)
+
 SYMBOL = 'ETHUSDT'
 kline_data = pd.DataFrame()
 indicator_csv = pd.DataFrame(columns=['date_time', 'k', 'd', 'j', 'price', 'atr', 'direction'])
@@ -280,6 +282,30 @@ def get_indicator_csv(kline_data, direction):
         indicator_csv = indicator_csv._append(kline_data.iloc[-1], ignore_index=True)
     indicator_csv.to_csv('indicator.csv', index=False) 
 
+def change_leverage(SYMBOL, leverage):
+    try:
+        response = um_futures_client.change_leverage(
+            symbol = SYMBOL, leverage = leverage, recvWindows = 6000
+        )
+        logging.info(response)
+    except ClientError as error:
+        logging.error(
+            "Found error. status: {}, error code: {}, error message: {}".format(
+                error.status_code, error.error_code, error.error_message
+            )
+        )
+
+# def get_position_mode():
+#     try:
+#         response = um_futures_client.get_position_mode(recvWindow=2000)
+#         # logging.info(response)
+#         return response['dualSidePosition']
+#     except ClientError as error:
+#         logging.error(
+#             "Found error. status: {}, error code: {}, error message: {}".format(
+#                 error.status_code, error.error_code, error.error_message
+#             )
+#         )
 
 
 
