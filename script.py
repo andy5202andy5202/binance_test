@@ -10,6 +10,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 import os
 import sys
 
+#set api key, create another file named api_key.txt, and write your api key and base url
 with open('api_key.txt', 'r') as file:
     lines = file.readlines()
 
@@ -291,7 +292,9 @@ def change_leverage(SYMBOL, leverage):
     except ClientError as error:
         logging.error(
             "Found error. status: {}, error code: {}, error message: {}".format(
-                error.status_code, error.error_code, error.error_message
+                error.status_code,
+                error.error_code, 
+                error.error_message
             )
         )
 
@@ -307,7 +310,9 @@ def get_position_mode():
     except ClientError as error:
         logging.error(
             "Found error. status: {}, error code: {}, error message: {}".format(
-                error.status_code, error.error_code, error.error_message
+                error.status_code, 
+                error.error_code, 
+                error.error_message
             )
         )
 
@@ -321,7 +326,9 @@ def chang_position_mode(FLAG):
     except ClientError as error:
         logging.error(
             "Found error. status: {}, error code: {}, error message: {}".format(
-                error.status_code, error.error_code, error.error_message
+                error.status_code, 
+                error.error_code, 
+                error.error_message
             )
         )
 
@@ -335,7 +342,9 @@ def change_margin_type(SYMBOL, TYPE):
     except ClientError as error:
         logging.error(
             "Found error. status: {}, error code: {}, error message: {}".format(
-                error.status_code, error.error_code, error.error_message
+                error.status_code, 
+                error.error_code, 
+                error.error_message
             )
         )
 
