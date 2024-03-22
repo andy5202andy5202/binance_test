@@ -295,11 +295,15 @@ def change_leverage(SYMBOL, leverage):
             )
         )
 
+#check the position mode
 def get_position_mode():
     try:
         response = um_futures_client.get_position_mode(recvWindow=2000)
         logging.info(response)
-        print(type(response))
+        if ( response['dualSidePosition'] == False ):
+            return 'one direction'
+        else:
+            return 'dual direction'
     except ClientError as error:
         logging.error(
             "Found error. status: {}, error code: {}, error message: {}".format(
@@ -307,8 +311,36 @@ def get_position_mode():
             )
         )
 
+#chang the position mode, string 'True' to set dual mode
+def chang_position_mode(FLAG):
+    try:
+        response = um_futures_client.change_position_mode(
+            dualSidePosition = FLAG, recvWindow=2000
+        )
+        logging.info(response)
+    except ClientError as error:
+        logging.error(
+            "Found error. status: {}, error code: {}, error message: {}".format(
+                error.status_code, error.error_code, error.error_message
+            )
+        )
 
-get_position_mode()
+# change the margin type, symbol is like "ETHUSDT", type is "ISOLATED" or "CROSSED"
+def change_margin_type(SYMBOL, TYPE):
+    try:
+        response = um_futures_client.change_margin_type(
+            symbol = SYMBOL, marginType = TYPE, recvWindow=6000
+        )
+        logging.info(response)
+    except ClientError as error:
+        logging.error(
+            "Found error. status: {}, error code: {}, error message: {}".format(
+                error.status_code, error.error_code, error.error_message
+            )
+        )
+
+change_margin_type(SYMBOL, "CROSSED")
+
 # def report_csv():
 
 
@@ -335,26 +367,26 @@ def auto():
         get_indicator_csv(kline_data, now_direction)
         execute_trade(SYMBOL, direction, now_direction, trade_num, now_price)
     
-if __name__ == '__main__':
-    trade_flag = False
-    open_time = ''
-    direction = ''
-    open_price = 0.0
-    start_fin = float(get_balance('USDT'))
-    trade_num = int(start_fin / 100) * 0.01
-    open_fee = 0.0
-    close_fee = 0.0
-    dup_time = 0
-    dup_profit = 1
-    profit = 0
-    if os.path.exists('indicator.csv'):
-        os.remove('indicator.csv')
-        print("Old 'indicator.csv' deleted.")
-    kline_data.to_csv('indicator.csv', index=False)
-    print("New 'indicator.csv' created.")
+# if __name__ == '__main__':
+#     trade_flag = False
+#     open_time = ''
+#     direction = ''
+#     open_price = 0.0
+#     start_fin = float(get_balance('USDT'))
+#     trade_num = int(start_fin / 100) * 0.01
+#     open_fee = 0.0
+#     close_fee = 0.0
+#     dup_time = 0
+#     dup_profit = 1
+#     profit = 0
+#     if os.path.exists('indicator.csv'):
+#         os.remove('indicator.csv')
+#         print("Old 'indicator.csv' deleted.")
+#     kline_data.to_csv('indicator.csv', index=False)
+#     print("New 'indicator.csv' created.")
 
-    scheduler = BlockingScheduler(timezone = "Asia/Shanghai")
-    scheduler.add_job(auto, 'interval', minutes = 1)
-    scheduler.start()
+#     scheduler = BlockingScheduler(timezone = "Asia/Shanghai")
+#     scheduler.add_job(auto, 'interval', minutes = 1)
+#     scheduler.start()
 
     
