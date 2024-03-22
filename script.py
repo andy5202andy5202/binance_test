@@ -295,20 +295,20 @@ def change_leverage(SYMBOL, leverage):
             )
         )
 
-# def get_position_mode():
-#     try:
-#         response = um_futures_client.get_position_mode(recvWindow=2000)
-#         # logging.info(response)
-#         return response['dualSidePosition']
-#     except ClientError as error:
-#         logging.error(
-#             "Found error. status: {}, error code: {}, error message: {}".format(
-#                 error.status_code, error.error_code, error.error_message
-#             )
-#         )
+def get_position_mode():
+    try:
+        response = um_futures_client.get_position_mode(recvWindow=2000)
+        logging.info(response)
+        print(type(response))
+    except ClientError as error:
+        logging.error(
+            "Found error. status: {}, error code: {}, error message: {}".format(
+                error.status_code, error.error_code, error.error_message
+            )
+        )
 
 
-
+get_position_mode()
 # def report_csv():
 
 
@@ -335,7 +335,6 @@ def auto():
         get_indicator_csv(kline_data, now_direction)
         execute_trade(SYMBOL, direction, now_direction, trade_num, now_price)
     
-
 if __name__ == '__main__':
     trade_flag = False
     open_time = ''
