@@ -89,7 +89,6 @@ def get_price(symbol):
             )
         )
         return 0
-    
 #trade
 def new_order(symbol, side, quantity):
     try:
@@ -315,7 +314,7 @@ def get_position_mode():
                 error.error_message
             )
         )
-
+# print(get_position_mode())
 #chang the position mode, string 'True' to set dual mode
 def chang_position_mode(FLAG):
     try:
@@ -348,12 +347,27 @@ def change_margin_type(SYMBOL, TYPE):
             )
         )
 
-change_margin_type(SYMBOL, "CROSSED")
+# change_margin_type(SYMBOL, "ISOLATED")
+# orderId = new_order(SYMBOL, "BUY", 0.01)
+# print(orderId)
+        
+#change isolated position margin, amount is amount of position, type 1 means increase, 2 means decrease
+def modify_isolated_position_margin(SYMBOL, amount, type):
+    try:
+        response = um_futures_client.modify_isolated_position_margin(
+            symbol = SYMBOL, amount = amount, type = type, recvWindow=6000
+        )
+        logging.info(response)
+    except ClientError as error:
+        logging.error(
+            "Found error. status: {}, error code: {}, error message: {}".format(
+                error.status_code, 
+                error.error_code, 
+                error.error_message
+            )
+        )
 
-# def report_csv():
-
-
-def auto():
+def autoTransaction():
     global trade_flag, open_time, direction, open_price, start_fin, trade_num, \
           open_fee, close_fee, dup_time, dup_profit, profit
     if not trade_flag:
@@ -375,7 +389,29 @@ def auto():
         now_direction, kline_data = indicator_cal()
         get_indicator_csv(kline_data, now_direction)
         execute_trade(SYMBOL, direction, now_direction, trade_num, now_price)
-    
+
+def main():
+    trade_flag = False
+    open_time = ''
+    direction = ''
+    open_price = 0.0
+    start_fin = float(get_balance('USDT'))
+    trade_num = int(start_fin / 100) * 0.01
+    open_fee = 0.0
+    close_fee = 0.0
+    dup_time = 0
+    dup_profit = 1
+    profit = 0
+    if os.path.exists('indicator.csv'):
+        os.remove('indicator.csv')
+        print("Old 'indicator.csv' deleted.")
+    kline_data.to_csv('indicator.csv', index=False)
+    print("New 'indicator.csv' created.")
+
+    scheduler = BlockingScheduler(timezone = "Asia/Shanghai")
+    scheduler.add_job(autoTransaction, 'interval', minutes = 1)
+    scheduler.start()
+
 # if __name__ == '__main__':
 #     trade_flag = False
 #     open_time = ''
@@ -395,7 +431,7 @@ def auto():
 #     print("New 'indicator.csv' created.")
 
 #     scheduler = BlockingScheduler(timezone = "Asia/Shanghai")
-#     scheduler.add_job(auto, 'interval', minutes = 1)
+#     scheduler.add_job(autoTransaction, 'interval', minutes = 1)
 #     scheduler.start()
 
     
