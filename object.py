@@ -8,9 +8,8 @@ class Position():
                  leverage, 
                  positionSide,
                  openPrice,
-                 openFee,
-                ):
-        
+                 openFee):
+
         self.symbol = symbol
         self.time = time
         self.direction = DIRECTION
