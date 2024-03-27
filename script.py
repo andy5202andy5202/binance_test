@@ -146,20 +146,20 @@ def read_data(data, i):
 
 def indicator_cal():
     ohlcv = pd.DataFrame(get_kline(SYMBOL, '1m', 50),
-                         columns = [
-                             'timestamp',
-                             'open',
-                             'high',
-                             'low',
-                             'close',
-                             'volumn',
-                             'close_time',
-                             'quote_av',
-                             'trades',
-                             'tb_base_av',
-                             'tb_quote_av',
-                             'ignore'
-                         ])
+                        columns = [
+                            'timestamp',
+                            'open',
+                            'high',
+                            'low',
+                            'close',
+                            'volumn',
+                            'close_time',
+                            'quote_av',
+                            'trades',
+                            'tb_base_av',
+                            'tb_quote_av',
+                            'ignore'
+                        ])
     
     kline_data['date_time'] = ohlcv['timestamp']
     kline_data['date_time'] = pd.to_datetime(kline_data['date_time'], unit = 'ms')
