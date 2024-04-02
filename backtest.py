@@ -105,6 +105,8 @@ def strategyOfRSIandMACD(DATA):
 #                 'returnRate',
 #                 'positionChange']
 def test(DATA):
+    lose = 0
+    win = 0
     resultOfMACD_ATR_ADX_EMA = pd.DataFrame(columns = data.resultColumn)
     position = data.Position('ETH',
                             '',
@@ -139,7 +141,7 @@ def test(DATA):
                 position.time = DATA.loc[i,'Timestamp']
                 position.entryPrice = closePrice
                 position.startFin -= position.openFee
-                position.stopLosePrice = position.entryPrice - ATR
+                position.stopLosePrice = position.entryPrice - 3*ATR
                 
                 new_row = pd.DataFrame({'Type': 'open',
                     'Time': position.time,
@@ -161,7 +163,7 @@ def test(DATA):
                 position.time = DATA.loc[i,'Timestamp']
                 position.entryPrice = closePrice
                 position.startFin -= position.openFee
-                position.stopLosePrice = position.entryPrice + ATR
+                position.stopLosePrice = position.entryPrice + 3*ATR
                 
                 new_row = pd.DataFrame({'Type': 'open',
                     'Time': position.time,
@@ -187,7 +189,7 @@ def test(DATA):
                 closePrice != position.stopLosePrice:
                 
                 _profit = (((closePrice - position.entryPrice)/position.entryPrice) \
-                    * position.investFund * position.leverage)* - (1+(closePrice - position.entryPrice)/position.entryPrice) \
+                    * position.investFund * position.leverage) - (1+(closePrice - position.entryPrice)/position.entryPrice) \
                     * position.investFund * 0.0004
                 new_row = pd.DataFrame({'Type': 'Close',
                                         'Time': DATA.loc[i,'Timestamp'],
@@ -201,15 +203,16 @@ def test(DATA):
                                         index=[len(resultOfMACD_ATR_ADX_EMA)])
                 resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
 
-                
+                position.startFin += _profit
                 position.direction = ''
                 position.entryPrice = ''
                 position.time = ''
                 position.stopLosePrice = ''
+                win += 1
                 
             elif closePrice <= position.stopLosePrice:
                 _profit = ((closePrice - position.entryPrice)/position.entryPrice) \
-                    * position.investFund * position.leverage -(-1)* (1+(closePrice - position.entryPrice)/position.entryPrice) \
+                    * position.investFund * position.leverage - (1+(closePrice - position.entryPrice)/position.entryPrice) \
                     * position.investFund * 0.0004
                 new_row = pd.DataFrame({'Type': 'Close',
                                         'Time': DATA.loc[i,'Timestamp'],
@@ -223,11 +226,12 @@ def test(DATA):
                                         index=[len(resultOfMACD_ATR_ADX_EMA)])
                 resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
 
-                
+                position.startFin += _profit
                 position.direction = ''
                 position.entryPrice = ''
                 position.time = ''
                 position.stopLosePrice = ''
+                lose += 1
             
                 
         elif position.direction == 'SHORT':
@@ -238,7 +242,8 @@ def test(DATA):
                 closePrice != position.stopLosePrice:
                 
                 _profit = -1 * ((closePrice - position.entryPrice)/position.entryPrice) \
-                    * position.investFund * position.leverage - closePrice * 0.0004
+                    * position.investFund * position.leverage - (1+(closePrice - position.entryPrice)/position.entryPrice) \
+                    * position.investFund  * 0.0004 
                 new_row = pd.DataFrame({'Type': 'Close',
                                         'Time': DATA.loc[i,'Timestamp'],
                                         'Direction': position.direction,
@@ -251,15 +256,17 @@ def test(DATA):
                                         index=[len(resultOfMACD_ATR_ADX_EMA)])
                 resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
 
-                
+                position.startFin += _profit
                 position.direction = ''
                 position.entryPrice = ''
                 position.time = ''
                 position.stopLosePrice = ''
+                win += 1
                 
             elif closePrice >= position.stopLosePrice:
                 _profit = -1 * ((closePrice - position.entryPrice)/position.entryPrice) \
-                    * position.investFund * position.leverage - closePrice * 0.0004
+                    * position.investFund * position.leverage - (1+(closePrice - position.entryPrice)/position.entryPrice) \
+                    * position.investFund * 0.0004
                 new_row = pd.DataFrame({'Type': 'Close',
                                         'Time': DATA.loc[i,'Timestamp'],
                                         'Direction': position.direction,
@@ -272,13 +279,15 @@ def test(DATA):
                                         index=[len(resultOfMACD_ATR_ADX_EMA)])
                 resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
 
-                
+                position.startFin += _profit
                 position.direction = ''
                 position.entryPrice = ''
                 position.time = ''
                 position.stopLosePrice = ''
+                lose += 1
                 
     resultOfMACD_ATR_ADX_EMA.to_csv('resultOfBackTest.csv')
+    print(win, ' ', lose)
 
 
 
