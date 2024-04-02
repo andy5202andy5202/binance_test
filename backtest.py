@@ -186,8 +186,9 @@ def test(DATA):
                 ADX > 45 and \
                 closePrice != position.stopLosePrice:
                 
-                _profit = ((closePrice - position.entryPrice)/position.entryPrice) \
-                    * position.investFund * position.leverage - closePrice * 0.0004
+                _profit = (((closePrice - position.entryPrice)/position.entryPrice) \
+                    * position.investFund * position.leverage)* - (1+(closePrice - position.entryPrice)/position.entryPrice) \
+                    * position.investFund * 0.0004
                 new_row = pd.DataFrame({'Type': 'Close',
                                         'Time': DATA.loc[i,'Timestamp'],
                                         'Direction': position.direction,
@@ -195,8 +196,8 @@ def test(DATA):
                                         'finishPrice': DATA.loc[i,'closePrice'],
                                         'Fee': position.closeFee,
                                         'Profit': _profit,
-                                        'returnRate': str(100 * _profit / position.investFund) + '%',
-                                        'positionChange': str(100 * (_profit + position.startFin) / position.startFin) + '%'},
+                                        'returnRate': str(100 *( _profit / position.investFund)) + '%',
+                                        'positionChange': str(100 * ((_profit + position.startFin) / position.startFin)) + '%'},
                                         index=[len(resultOfMACD_ATR_ADX_EMA)])
                 resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
 
@@ -208,7 +209,8 @@ def test(DATA):
                 
             elif closePrice <= position.stopLosePrice:
                 _profit = ((closePrice - position.entryPrice)/position.entryPrice) \
-                    * position.investFund * position.leverage - closePrice * 0.0004
+                    * position.investFund * position.leverage -(-1)* (1+(closePrice - position.entryPrice)/position.entryPrice) \
+                    * position.investFund * 0.0004
                 new_row = pd.DataFrame({'Type': 'Close',
                                         'Time': DATA.loc[i,'Timestamp'],
                                         'Direction': position.direction,
@@ -216,8 +218,8 @@ def test(DATA):
                                         'finishPrice': DATA.loc[i,'closePrice'],
                                         'Fee': position.closeFee,
                                         'Profit': _profit,
-                                        'returnRate': str(100 * _profit / position.investFund) + '%',
-                                        'positionChange': str(100 * (_profit + position.startFin) / position.startFin) + '%'},
+                                        'returnRate': str(100 *( _profit / position.investFund)) + '%',
+                                        'positionChange': str(100 * ((_profit + position.startFin) / position.startFin)) + '%'},
                                         index=[len(resultOfMACD_ATR_ADX_EMA)])
                 resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
 
@@ -244,8 +246,8 @@ def test(DATA):
                                         'finishPrice': DATA.loc[i,'closePrice'],
                                         'Fee': position.closeFee,
                                         'Profit': _profit,
-                                        'returnRate': str(100 * _profit / position.investFund) + '%',
-                                        'positionChange': str(100 * (_profit + position.startFin) / position.startFin) + '%'},
+                                        'returnRate': str(100 *( _profit / position.investFund)) + '%',
+                                        'positionChange': str(100 *((_profit + position.startFin) / position.startFin))+ '%'},
                                         index=[len(resultOfMACD_ATR_ADX_EMA)])
                 resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
 
@@ -265,8 +267,8 @@ def test(DATA):
                                         'finishPrice': DATA.loc[i,'closePrice'],
                                         'Fee': position.closeFee,
                                         'Profit': _profit,
-                                        'returnRate': str(100 * _profit / position.investFund) + '%',
-                                        'positionChange': str(100 * (_profit + position.startFin) / position.startFin) + '%'},
+                                        'returnRate': str(100 * (_profit / position.investFund)) + '%',
+                                        'positionChange': str(100 *((_profit + position.startFin) / position.startFin)) + '%'},
                                         index=[len(resultOfMACD_ATR_ADX_EMA)])
                 resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
 
