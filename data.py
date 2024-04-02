@@ -39,4 +39,5 @@ resultColumn = ['Type',
                 'Fee',
                 'Profit',
                 'returnRate',
-                'positionChange']
+                'positionChange'
+                ]

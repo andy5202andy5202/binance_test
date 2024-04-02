@@ -120,79 +120,107 @@ def test(DATA):
                             9
                             ) 
     for i in range(position.maxNumberOfKlines+2, len(DATA)-1):
-        closePrice = DATA.loc[i,['closePrice']]
-        MACD_diff = DATA.loc[i,['MACD_diff']]
-        RSI = DATA.loc[i-1,['RSI']]
-        ATR = DATA.loc[i,['ATR']]
-        EMA_f = DATA.loc[i,['EMA_f']]
-        EMA_s = DATA.loc[i,['EMA_f']]
-        ADX = DATA.loc[i,['ADX']]
+        closePrice = float(DATA.loc[i,'closePrice'])
+        MACD_diff = float(DATA.loc[i,'MACD_diff'])
+        MACD_diff_pre = float(DATA.loc[i-1,'MACD_diff'])
+        RSI = float(DATA.loc[i,'RSI'])
+        ATR = float(DATA.loc[i,'ATR'])
+        EMA_f = float(DATA.loc[i,'EMA_f'])
+        EMA_s = float(DATA.loc[i,'EMA_s'])
+        ADX = float(DATA.loc[i,'ADX'])
+        RSI_pre = float(DATA.loc[i-1,'RSI'])
+        RSI_pre_pre = float(DATA.loc[i-2,'RSI'])
+        
         
         if position.direction == '':
-            if (MACD_diff > 0).any() and (DATA.loc[i-1,['MACD_diff']] < 0).any() and \
-            ( (RSI < 30).any() or (DATA.loc[i-1,['RSI']] < 30).any() or (DATA.loc[i-2,['RSI']] < 30).any()):
+            if MACD_diff > 0 and MACD_diff_pre < 0 and \
+            (RSI < 30 or RSI_pre < 30 or RSI_pre_pre < 30):
                 position.direction = 'LONG'
-                position.time = DATA.loc[i,['Timestamp']]
-                position.entryPrice = closePrice[0]
+                position.time = DATA.loc[i,'Timestamp']
+                position.entryPrice = closePrice
                 position.startFin -= position.openFee
-                position.stopLosePrice = position.entryPrice - 3 * ATR
+                position.stopLosePrice = position.entryPrice - ATR
+                
+                new_row = pd.DataFrame({'Type': 'open',
+                    'Time': position.time,
+                    'Direction': position.direction,
+                    'entryPrice': position.entryPrice,
+                    'finishPrice': '',
+                    'Fee': position.openFee,
+                    'Profit': '',
+                    'returnRate': '',
+                    'positionChange': ''},
+                    index=[len(resultOfMACD_ATR_ADX_EMA)])
+                resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
+                
+                continue
             
-            elif (MACD_diff < 0).any() and (DATA.loc[i-1,['MACD_diff']] > 0).any() and \
-            ((RSI > 70).any() or (DATA.loc[i-1,['RSI']] > 70).any() or (DATA.loc[i-2,['RSI']] > 70).any()):
+            elif MACD_diff < 0 and MACD_diff_pre > 0 and \
+            (RSI > 70 or RSI_pre > 70 or RSI_pre_pre > 70):
                 position.direction = 'SHORT'
-                position.time = DATA.loc[i,['Timestamp']]
-                position.entryPrice = closePrice[0]
+                position.time = DATA.loc[i,'Timestamp']
+                position.entryPrice = closePrice
                 position.startFin -= position.openFee
-                position.stopLosePrice = position.entryPrice + 3 * ATR
+                position.stopLosePrice = position.entryPrice + ATR
                 
-            resultOfMACD_ATR_ADX_EMA._append({'Type': 'Open ',
-                                            'Time': position.time,
-                                            'Direction': position.direction,
-                                            'entryPrice': position.entryPrice,
-                                            'finishPrice': '',
-                                            'Fee': position.openFee,
-                                            'Profit': '',
-                                            'returnRate': '',
-                                            'positionChange': ''},
-                                            ignore_index=True)
+                new_row = pd.DataFrame({'Type': 'open',
+                    'Time': position.time,
+                    'Direction': position.direction,
+                    'entryPrice': position.entryPrice,
+                    'finishPrice': '',
+                    'Fee': position.openFee,
+                    'Profit': '',
+                    'returnRate': '',
+                    'positionChange': ''},
+                    index=[len(resultOfMACD_ATR_ADX_EMA)])
+                resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
+                continue
+                
+            
+
+            
         elif position.direction == 'LONG':
-            if (EMA_f < EMA_s).any() and \
-                (MACD_diff < 0).any() and \
-                (RSI < DATA.loc[i-1,['RSI']]).any() and \
-                (ADX > 45).any() and \
-                closePrice[0] != position.stopLosePrice:
+            if EMA_f < EMA_s and \
+                MACD_diff < 0 and \
+                RSI < RSI_pre and \
+                ADX > 45 and \
+                closePrice != position.stopLosePrice:
                 
-                _profit = (closePrice[0] - position.entryPrice)/position.entryPrice \
-                    * position.investFund * position.leverage - closePrice[0] * 0.0004
-                resultOfMACD_ATR_ADX_EMA._append({'Type': 'Close',
-                                            'Time': DATA.loc[i,['Timestamp']],
-                                            'Direction': position.direction,
-                                            'entryPrice': position.entryPrice,
-                                            'finishPrice': DATA.loc[i,['closePrice']],
-                                            'Fee': position.closeFee,
-                                            'Profit': _profit,
-                                            'returnRate': str(100 * _profit / position.investFund) + '%',
-                                            'positionChange': str(100 * (_profit + position.startFin) / position.startFin) + '%'},
-                                            ignore_index=True)
+                _profit = ((closePrice - position.entryPrice)/position.entryPrice) \
+                    * position.investFund * position.leverage - closePrice * 0.0004
+                new_row = pd.DataFrame({'Type': 'Close',
+                                        'Time': DATA.loc[i,'Timestamp'],
+                                        'Direction': position.direction,
+                                        'entryPrice': position.entryPrice,
+                                        'finishPrice': DATA.loc[i,'closePrice'],
+                                        'Fee': position.closeFee,
+                                        'Profit': _profit,
+                                        'returnRate': str(100 * _profit / position.investFund) + '%',
+                                        'positionChange': str(100 * (_profit + position.startFin) / position.startFin) + '%'},
+                                        index=[len(resultOfMACD_ATR_ADX_EMA)])
+                resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
+
                 
                 position.direction = ''
                 position.entryPrice = ''
                 position.time = ''
                 position.stopLosePrice = ''
                 
-            elif (closePrice[0] <= position.stopLosePrice).any():
-                _profit = (closePrice[0] - position.entryPrice)/position.entryPrice \
-                    * position.investFund * position.leverage - closePrice[0] * 0.0004
-                resultOfMACD_ATR_ADX_EMA._append({'Type': 'Close',
-                                            'Time': DATA.loc[i,['Timestamp']],
-                                            'Direction': position.direction,
-                                            'entryPrice': position.entryPrice,
-                                            'finishPrice': DATA.loc[i,['closePrice']],
-                                            'Fee': position.closeFee,
-                                            'Profit': _profit,
-                                            'returnRate': str(100 * _profit / position.investFund) + '%',
-                                            'positionChange': str(100 * (_profit + position.startFin) / position.startFin) + '%'},
-                                            ignore_index=True)
+            elif closePrice <= position.stopLosePrice:
+                _profit = ((closePrice - position.entryPrice)/position.entryPrice) \
+                    * position.investFund * position.leverage - closePrice * 0.0004
+                new_row = pd.DataFrame({'Type': 'Close',
+                                        'Time': DATA.loc[i,'Timestamp'],
+                                        'Direction': position.direction,
+                                        'entryPrice': position.entryPrice,
+                                        'finishPrice': DATA.loc[i,'closePrice'],
+                                        'Fee': position.closeFee,
+                                        'Profit': _profit,
+                                        'returnRate': str(100 * _profit / position.investFund) + '%',
+                                        'positionChange': str(100 * (_profit + position.startFin) / position.startFin) + '%'},
+                                        index=[len(resultOfMACD_ATR_ADX_EMA)])
+                resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
+
                 
                 position.direction = ''
                 position.entryPrice = ''
@@ -201,43 +229,47 @@ def test(DATA):
             
                 
         elif position.direction == 'SHORT':
-            if (EMA_f > EMA_s).any() and \
-                (MACD_diff > 0).any() and \
-                (RSI > DATA.loc[i-1,['RSI']]).any() and \
-                (ADX > 45).any() and \
-                (closePrice != position.stopLosePrice).any():
+            if EMA_f > EMA_s and \
+                MACD_diff > 0 and \
+                RSI > RSI_pre and \
+                ADX > 45 and \
+                closePrice != position.stopLosePrice:
                 
-                _profit = -1 * (closePrice - position.entryPrice)/position.entryPrice \
+                _profit = -1 * ((closePrice - position.entryPrice)/position.entryPrice) \
                     * position.investFund * position.leverage - closePrice * 0.0004
-                resultOfMACD_ATR_ADX_EMA._append({'Type': 'Close',
-                                            'Time': DATA.loc[i,['Timestamp']],
-                                            'Direction': position.direction,
-                                            'entryPrice': position.entryPrice,
-                                            'finishPrice': DATA.loc[i,['closePrice']],
-                                            'Fee': position.closeFee,
-                                            'Profit': _profit,
-                                            'returnRate': str(100 * _profit / position.investFund) + '%',
-                                            'positionChange': str(100 * (_profit + position.startFin) / position.startFin) + '%'},
-                                            ignore_index=True)
+                new_row = pd.DataFrame({'Type': 'Close',
+                                        'Time': DATA.loc[i,'Timestamp'],
+                                        'Direction': position.direction,
+                                        'entryPrice': position.entryPrice,
+                                        'finishPrice': DATA.loc[i,'closePrice'],
+                                        'Fee': position.closeFee,
+                                        'Profit': _profit,
+                                        'returnRate': str(100 * _profit / position.investFund) + '%',
+                                        'positionChange': str(100 * (_profit + position.startFin) / position.startFin) + '%'},
+                                        index=[len(resultOfMACD_ATR_ADX_EMA)])
+                resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
+
                 
                 position.direction = ''
                 position.entryPrice = ''
                 position.time = ''
                 position.stopLosePrice = ''
                 
-            elif (closePrice[0] >= position.stopLosePrice[0]).any():
-                _profit = -1 * (closePrice - position.entryPrice)/position.entryPrice \
+            elif closePrice >= position.stopLosePrice:
+                _profit = -1 * ((closePrice - position.entryPrice)/position.entryPrice) \
                     * position.investFund * position.leverage - closePrice * 0.0004
-                resultOfMACD_ATR_ADX_EMA._append({'Type': 'Close',
-                                            'Time': DATA.loc[i,['Timestamp']],
-                                            'Direction': position.direction,
-                                            'entryPrice': position.entryPrice,
-                                            'finishPrice': DATA.loc[i,['closePrice']],
-                                            'Fee': position.closeFee,
-                                            'Profit': _profit,
-                                            'returnRate': str(100 * _profit / position.investFund) + '%',
-                                            'positionChange': str(100 * (_profit + position.startFin) / position.startFin) + '%'},
-                                            ignore_index=True)
+                new_row = pd.DataFrame({'Type': 'Close',
+                                        'Time': DATA.loc[i,'Timestamp'],
+                                        'Direction': position.direction,
+                                        'entryPrice': position.entryPrice,
+                                        'finishPrice': DATA.loc[i,'closePrice'],
+                                        'Fee': position.closeFee,
+                                        'Profit': _profit,
+                                        'returnRate': str(100 * _profit / position.investFund) + '%',
+                                        'positionChange': str(100 * (_profit + position.startFin) / position.startFin) + '%'},
+                                        index=[len(resultOfMACD_ATR_ADX_EMA)])
+                resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
+
                 
                 position.direction = ''
                 position.entryPrice = ''
@@ -257,29 +289,25 @@ BASE_URL = 'https://fapi.binance.com'
 # '2022-11-11 0:0:0.0'
 
 historyKline = pd.DataFrame()
-historyKline = get_history_kline('1m', '2024-3-30 23:59:0.0', '2024-3-31 0:0:0.0')
+historyKline = get_history_kline('1m', '2024-1-1 0:0:0.0', '2024-3-31 0:0:0.0')
 historyKline.to_csv('historyKlines.csv')
+print('get klines done')
 List = ['Timestamp', 'High', 'Low', 'closePrice']
 historyKline = return_useful_column(historyKline, List)
-print('get klines done')
-# historyKline = macd_rsi_atr_adx_ema(historyKline)
-# historyKline['closePrice'].astype(float)
-# historyKline['MACD_diff'].astype(float)
-# historyKline['RSI'].astype(float)
-# historyKline['ATR'].astype(float)
-# historyKline['EMA_s'].astype(float)
-# historyKline['EMA_f'].astype(float)
-# historyKline['ADX'].astype(float)
+
+
+historyKline = macd_rsi_atr_adx_ema(historyKline)
+historyKline.to_csv('use.csv')
 print('calculate indicator done')
 # print(historyKline.loc[10,['closePrice']])
-s = historyKline.loc[10,['closePrice']].to_dict()['closePrice']
-print(s)
-print(type(s))
-t = historyKline.loc[10, 'closePrice']
-print(t)
-print(type(t))
-if float(t) == float(s):
-    print('Yes')
-# test(historyKline)
+# s = historyKline.loc[10,['closePrice']].to_dict()['closePrice']
+# print(s)
+# print(type(s))
+# t = historyKline.loc[10, 'closePrice']
+# print(t)
+# print(type(t))
+# if float(t) == float(s):
+#     print('Yes')
+test(historyKline)
 
 
