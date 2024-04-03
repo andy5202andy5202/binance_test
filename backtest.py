@@ -83,6 +83,14 @@ def macd_rsi_atr_adx_ema(DATA):
     DATA['ADX'] = talib.ADX(DATA['High'], DATA['Low'], DATA['closePrice'], timeperiod = 3)
     DATA['EMA_f'] = talib.EMA(DATA['closePrice'], timeperiod = 2)
     DATA['EMA_s'] = talib.EMA(DATA['closePrice'], timeperiod = 4)
+    DATA['KDJ_k'],DATA['KDJ_d'] =talib.STOCH(DATA['High'],\
+                                    DATA['Low'],\
+                                    DATA['closePrice'],\
+                                    fastk_period=2,\
+                                    slowk_period=6,\
+                                    slowk_matype=0,\
+                                    slowd_period=4,\
+                                    slowd_matype=0)
     return DATA
 
 def openFee(volume):
@@ -128,15 +136,23 @@ def test(DATA):
         RSI = float(DATA.loc[i,'RSI'])
         ATR = float(DATA.loc[i,'ATR'])
         EMA_f = float(DATA.loc[i,'EMA_f'])
+        EMA_f_pre = float(DATA.loc[i-1,'EMA_f'])
         EMA_s = float(DATA.loc[i,'EMA_s'])
+        EMA_s_pre = float(DATA.loc[i-1,'EMA_s'])
         ADX = float(DATA.loc[i,'ADX'])
         RSI_pre = float(DATA.loc[i-1,'RSI'])
         RSI_pre_pre = float(DATA.loc[i-2,'RSI'])
+        KDJ_k = float(DATA.loc[i,'KDJ_k'])
+        KDJ_k_pre = float(DATA.loc[i-1,'KDJ_k'])
+        KDJ_k_pre_pre = float(DATA.loc[i-2,'KDJ_k'])
         
+
         
         if position.direction == '':
             if MACD_diff > 0 and MACD_diff_pre < 0 and \
-            (RSI < 30 or RSI_pre < 30 or RSI_pre_pre < 30):
+            (KDJ_k < 30 or KDJ_k_pre < 30 or KDJ_k_pre_pre < 30) and \
+            (RSI < 30 or RSI_pre < 30 or RSI_pre_pre < 30) and \
+            ADX > 45:
                 position.direction = 'LONG'
                 position.time = DATA.loc[i,'Timestamp']
                 position.entryPrice = closePrice
@@ -158,7 +174,9 @@ def test(DATA):
                 continue
             
             elif MACD_diff < 0 and MACD_diff_pre > 0 and \
-            (RSI > 70 or RSI_pre > 70 or RSI_pre_pre > 70):
+            (KDJ_k > 70 or KDJ_k_pre > 70 or KDJ_k_pre_pre > 70) and \
+            (RSI > 70 or RSI_pre > 70 or RSI_pre_pre > 70) and \
+            ADX > 45:
                 position.direction = 'SHORT'
                 position.time = DATA.loc[i,'Timestamp']
                 position.entryPrice = closePrice
@@ -183,9 +201,11 @@ def test(DATA):
             
         elif position.direction == 'LONG':
             if EMA_f < EMA_s and \
+                EMA_f_pre > EMA_s_pre and \
                 MACD_diff < 0 and \
                 RSI < RSI_pre and \
                 ADX > 45 and \
+                closePrice > position.entryPrice and \
                 closePrice != position.stopLosePrice:
                 
                 _profit = (((closePrice - position.entryPrice)/position.entryPrice) \
@@ -236,9 +256,11 @@ def test(DATA):
                 
         elif position.direction == 'SHORT':
             if EMA_f > EMA_s and \
+                EMA_f_pre < EMA_s_pre and \
                 MACD_diff > 0 and \
                 RSI > RSI_pre and \
                 ADX > 45 and \
+                closePrice < position.entryPrice and \
                 closePrice != position.stopLosePrice:
                 
                 _profit = -1 * ((closePrice - position.entryPrice)/position.entryPrice) \
