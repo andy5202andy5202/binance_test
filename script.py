@@ -146,20 +146,20 @@ def read_data(data, i):
 
 def indicator_cal():
     ohlcv = pd.DataFrame(get_kline(SYMBOL, '1m', 50),
-                         columns = [
-                             'timestamp',
-                             'open',
-                             'high',
-                             'low',
-                             'close',
-                             'volumn',
-                             'close_time',
-                             'quote_av',
-                             'trades',
-                             'tb_base_av',
-                             'tb_quote_av',
-                             'ignore'
-                         ])
+                        columns = [
+                            'timestamp',
+                            'open',
+                            'high',
+                            'low',
+                            'close',
+                            'volumn',
+                            'close_time',
+                            'quote_av',
+                            'trades',
+                            'tb_base_av',
+                            'tb_quote_av',
+                            'ignore'
+                        ])
     
     kline_data['date_time'] = ohlcv['timestamp']
     kline_data['date_time'] = pd.to_datetime(kline_data['date_time'], unit = 'ms')
@@ -369,7 +369,7 @@ def modify_isolated_position_margin(SYMBOL, amount, type):
 
 def autoTransaction():
     global trade_flag, open_time, direction, open_price, start_fin, trade_num, \
-          open_fee, close_fee, dup_time, dup_profit, profit
+            open_fee, close_fee, dup_time, dup_profit, profit
     if not trade_flag:
         print('time: {}'.format(datetime.now()))
         direction, kline_data = indicator_cal()

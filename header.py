@@ -32,7 +32,7 @@ column2 = [
     'High',
     'Low',
     'Close_Price',
-    'Volumn',
+    'Volume',
     'Close_time',
     'Turnover',
     'Trades_number',
@@ -60,13 +60,13 @@ def get_price(symbol):
         return price
     except ClientError as Error:
         logging.error("Found error. status:{}, error code: {}, error message: {}"
-                      .format(Error.status_code, Error.error_code, Error.error_message))
+                    .format(Error.status_code, Error.error_code, Error.error_message))
         return 0
     
 def get_kline(symbol, interval, start_time, end_time):
     try:
         res = UMFutures().klines(symbol, interval,
-                                 starttime = start_time, endtime = end_time)
+                                starttime = start_time, endtime = end_time)
         return res
     except ClientError as Error:
         logging.error("Found error. status:{}, error code: {}, error message: {}"
