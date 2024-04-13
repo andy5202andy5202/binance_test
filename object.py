@@ -2,14 +2,14 @@ Symbols = ["ETHUSDT", "SOLUSDT", "DOGEUSDT"]
 
 class Position():
     def __init__(self, 
-                 symbol, 
-                 time, 
-                 DIRECTION, 
-                 leverage, 
-                 positionSide,
-                 openPrice,
-                 openFee
-                 ):
+                symbol, 
+                time, 
+                DIRECTION, 
+                leverage, 
+                positionSide,
+                openPrice,
+                openFee
+                ):
 
         self.symbol = symbol
         self.time = time

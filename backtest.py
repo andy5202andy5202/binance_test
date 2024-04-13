@@ -7,6 +7,7 @@ import time
 from datetime import datetime
 import talib
 import data
+import os
 
 column = [
     'Timestamp',
@@ -147,18 +148,18 @@ def test(DATA):
     lose = 0
     win = 0
     resultOfMACD_ATR_ADX_EMA = pd.DataFrame(columns = data.resultColumn)
-    position = data.Position('ETH',
-                            '',
-                            '',
-                            20,
-                            500,
-                            25,
-                            False,
-                            '',
-                            '',
-                            openFee(25),
-                            '',
-                            9
+    position = data.Position('ETH', #symbol
+                            '', #time 
+                            '', #Direction
+                            20, #leverage
+                            500, #startFin
+                            25, #investFund
+                            False, #positionSide
+                            '', #entryPrice
+                            '', #stopLosePrice
+                            openFee(25), #openFee
+                            '', #closeFee
+                            9 #maxNumberOfKlines
                             ) 
     for i in range(position.maxNumberOfKlines+2, len(DATA)-1):
         closePrice = float(DATA.loc[i,'closePrice'])
@@ -209,7 +210,7 @@ def test(DATA):
                 returnRate = _returnRate(25,position.direction,closePrice, position.entryPrice, 20)
                 new_row = log_close_position(position, DATA.loc[i, 'closePrice'], profit, returnRate)
                 resultOfMACD_ATR_ADX_EMA = pd.concat([resultOfMACD_ATR_ADX_EMA, new_row])
- 
+
                 position.startFin += profit
                 position.direction = ''
                 position.entryPrice = ''
@@ -293,18 +294,28 @@ BASE_URL = 'https://fapi.binance.com'
 
 # '2022-11-11 0:0:0.0'
 
-historyKline = pd.DataFrame()
-historyKline = get_history_kline('1m', '2024-3-27 0:0:0.0', '2024-3-31 0:0:0.0')
-historyKline.to_csv('historyKlines.csv')
-print('get klines done')
-List = ['Timestamp', 'High', 'Low', 'closePrice']
-historyKline = return_useful_column(historyKline, List)
+if __name__ == '__main__':
+    
+    historyKline = pd.DataFrame()
+    startTime = '2024-3-1'
+    endTime = '2024-3-31'
+    file_name = startTime + '-to-' + endTime + '.csv'
+    
+    if os.path.isfile(file_name):
+        historyKline = pd.read_csv(file_name)
+    else:
+        historyKline = get_history_kline('1m', startTime + ' 0:0:0.0', endTime + ' 0:0:0.0')
+        historyKline.to_csv(file_name)
+        
+    print('get klines done')
+    List = ['Timestamp', 'High', 'Low', 'closePrice']
+    historyKline = return_useful_column(historyKline, List)
 
 
-historyKline = macd_rsi_atr_adx_ema(historyKline)
-historyKline.to_csv('use.csv')
-print('calculate indicator done')
+    historyKline = macd_rsi_atr_adx_ema(historyKline)
+    historyKline.to_csv('use.csv')
+    print('calculate indicator done')
 
-test(historyKline)
+    test(historyKline)
 
 
