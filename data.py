@@ -1,5 +1,6 @@
 Symbols = ["ETHUSDT", "SOLUSDT", "DOGEUSDT"]
 
+
 class Position():
         def __init__(self, 
                 symbol, 
